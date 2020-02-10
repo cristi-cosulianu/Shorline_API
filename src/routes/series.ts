@@ -55,6 +55,17 @@ export = seriesRoutes;
 function prepareResponseSeries(requestedSeries: Series, identifier: string, req: any, res: any) {
 
     const query = req.query;
+    const timeFrameStart = query.startTime;
+    const timeFrameEnd = query.endTime;
+    const timeGranularityUnit = query.timeGranularityUnit;
+    const timeGranularityValue = query.timeGranularityValue;
+    var aggregationFunction = query.aggregationFunction;
+
+    if (!timeFrameStart && !timeFrameEnd && !timeGranularityUnit && !timeGranularityValue && !aggregationFunction) {
+        res.status(200).json({
+            series: requestedSeries
+        });
+    }
 
     if (!requestedSeries) {
         res.status(404).json({
@@ -63,8 +74,6 @@ function prepareResponseSeries(requestedSeries: Series, identifier: string, req:
     }
 
     // Check validity of the reuqested time frame.
-    const timeFrameStart = query.startTime;
-    const timeFrameEnd = query.endTime;
     const timeFrameRange = new TimeRange(timeFrameStart, timeFrameEnd);
 
     if (!TimeRange.isTimeRange(timeFrameRange)) {
@@ -80,18 +89,14 @@ function prepareResponseSeries(requestedSeries: Series, identifier: string, req:
     }
 
     // Check validity of the reuquested time granularity.
-    const timeGranularityUnit = query.timeGranularityUnit;
-    const timeGranularityValue = query.timeGranularityValue;
-    const timeGranularity = new TimeGranularity(timeGranularityUnit, timeGranularityValue);
+    var timeGranularity = new TimeGranularity(timeGranularityUnit, timeGranularityValue);
 
     if (timeGranularity.compare(requestedSeries.timeGranularity) < 0) {
-        res.status(404).json({
-            response: "Provided time granularity is lower than the initial time granularity!"
-        });
+        timeGranularity = requestedSeries.timeGranularity;
     }
 
     // Check validity of the reuqested aggregation function.
-    const aggregationFunction = new AggregationFunction(query.aggregationFunction);
+    aggregationFunction = new AggregationFunction(query.aggregationFunction);
 
 
     // Extract the requested series by applying the frame.

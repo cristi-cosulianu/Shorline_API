@@ -56,11 +56,11 @@ export class Series {
     applyFrame(frameTimeRange: TimeRange) {
 
         if (!TimeRange.isTimeRange(frameTimeRange)) {
-            return;
+            this.dataPoints = [];
         }
 
         if (!this.timeRange.includesTimeFrame(frameTimeRange)) {
-            return;
+            this.dataPoints = [];
         }
 
         this.dataPoints = this.dataPoints.filter(dataPoint => {
